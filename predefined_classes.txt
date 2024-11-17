@@ -8,3 +8,4 @@ hideout_target_balls
 head
 smoke
 fire
+third_person

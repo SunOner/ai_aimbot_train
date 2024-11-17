@@ -1,68 +1,126 @@
-# Example of model training
-- The tutorial will be updated gradually in the future.
-
 ## Requirements
-- Make sure you have python (version >= 3.11.6) and ultralytics package installed.
+- Ensure you have Python version **3.11.6** or higher installed.
+- Install the **ultralytics** package:
+  ```bash
+  pip install ultralytics -U
+  ```
 
-## Unpacking the repository
-- Download (Green button download/download zip) and unzip the archive to a place convenient for you, so that everything is in one folder.
+## Repository Unpacking
+- Download the repository (click the green "Code" button and then "Download ZIP"), then extract the archive to a convenient location so that everything is in one folder.
 
-## Image Annotation / Dataset / tips
-- There are many different programs and services for annotating images, but if you are doing this for the first time, then use Labelimg.
-- First download [Labelimg](https://github.com/HumanSignal/labelImg).
-- Unzip the program and transfer the file predefined_classes.txt (The file is located in the repository) to the labelimg/data folder.
-- The repository already contains examples of annotated images. `yolov8_train\datasets\game`.
-	- `images` - This folder contains images that are used for training the model.
-	- `labels` - This folder contains annotations for the corresponding images. These are text files that list the coordinates of the bounding boxes and the class IDs of objects detected in the images.
-	- `val` - This folder is used for storing images and labels for the validation dataset. The validation dataset is used to check the model's efficiency during training, to ensure that the model generalizes well and does not overfit on the training data.
-- After opening the labelimg, click Open Dir and select the path to the images to train the model. (`yolov8_train\datasets\game\images`).
-- Next, click Change Save Dir to select where your annotations will be saved. (`yolov8_train\datasets\game\labels`).
-- You can read how to use the program [here](https://github.com/HumanSignal/labelImg?tab=readme-ov-file#steps-yolo).
-- (Optionaly) How to achieve good results in training a model, you can read [this lesson](https://docs.ultralytics.com/yolov5/tutorials/tips_for_best_training_results/).
-- In short, annotate from 500 to 2500 images, as well as use empty images so that there are no players, weapons, fire on them. For example, just upload a large number of images with trees, chairs, grass, objects that look like people, empty locations from games and move these images to the dataset.
-- The more complex the game looks for AI (for example, cs2 is a more formulaic game than battlefield 2042), the more data you will need to train the model (You may need at least 5000-10000 images).
-- Images can be in 4k resolution and 100x100 pixels.
+## Annotating Images / Creating a Dataset / Tips
+- There are many programs and services for annotating images. If you're doing this for the first time, it's recommended to use **LabelImg**.
+
+### Installing and Setting up LabelImg
+1. Download [LabelImg](https://github.com/HumanSignal/labelImg) or [LabelImg_Next](https://github.com/SunOner/labelImg_Next).
+2. Extract the program and move the `predefined_classes.txt` file (located in the repository) to the `labelimg/data` folder.
+
+### Repository Structure with Annotated Image Examples
+The repository already contains examples of annotated images in the `ai_aimbot_train/datasets/game` folder:
+- `images` – contains images for model training.
+- `labels` – contains annotations for the corresponding images. These are text files with the coordinates of bounding boxes and object class IDs.
+- `val` – used to store images and annotations for the validation dataset. The validation set is needed to check the model's performance during training and prevent overfitting.
+
+### Annotating Your Own Data
+1. Open LabelImg and click **Open Dir**, selecting the path to the images for model training (`ai_aimbot_train/datasets/game/images`).
+2. Click **Change Save Dir** to choose where the annotations will be saved (`ai_aimbot_train/datasets/game/labels`).
+3. (Optional) Familiarize yourself with the [LabelImg usage guide](https://github.com/HumanSignal/labelImg?tab=readme-ov-file#steps-yolo).
+4. (Optional) Explore [tips for achieving the best training results](https://docs.ultralytics.com/yolov5/tutorials/tips_for_best_training_results/).
+
+### Recommendations for Creating a Quality Dataset
+- Annotate between **500 to 2500** images.
+- Include empty images that lack players, weapons, fire, and other objects. For example, add lots of images with trees, chairs, grass, human-like objects, and empty game locations.
+- The more complex a game looks for AI (e.g., **CS2** is more formalized than **Battlefield 2042**), the more data you'll need for model training (at least **5000-10000** images).
+- Image resolution can vary from **100x100** to **4K**.
 - Ready-made datasets can be found [here](https://universe.roboflow.com/).
-- Also, do not forget to add images and annotated files to the val folder, the same rules apply for this folder as for the train folder. There may be few images for validation, approximately if you have 1000 images for training, take and add 10 images for validation.
-- Pay attention to the game.yaml file.
-	- An example dataset is called game, the file can be renamed to the name of your project.
-	- In the file you will find values such as:
-		- path: game (The name of your dataset)
-		- train: images (Folder with images)
-		- val: val (Folder with images for validation)
-		- test: (Folder with images for testing, In this example, it's empty)
-- To find out the ultralytics settings file, type `yolo settings` in the command line.
+- Don't forget to add images and annotated files to the `val` folder. If you have **1000** training images, add about **10** validation images.
 
-## Training the model
-- (Optionaly) You can find everything about the training [here](https://docs.ultralytics.com/modes/train/).
-- After you have finished annotating the dataset, go to the yolov8_train folder with the `cd` command.
-- First, choose an pretrained model. There are differences in them.
-	- YOLOv8n (The fastest and stupidest. It is not demanding of resources at all)
-	- YOLOv8s (Just fast, and not so stupid. More demanding of resources)
-	- YOLOv8m (Currently the smartest for real-time work. A video card more powerful than the rtx 2060 is needed.)
-	- YOLOv8l and YOLOv8x (They are not suitable for our case, the most intelligent and voracious for detection.)
-- Let's choose YOLOv8n.
-- Now you need to choose the image size that the model will work with. The lower the resolution, the faster the model will be trained and the fewer objects the model will detect.
-- Choose between 320, 480 and 640. Let's choose 320.
-- Now let's choose how many epochs the model will be trained. The larger the dataset, the more epochs it will take to learn. Do not overdo it, many epochs can also affect the retraining of the model, keep an eye on the indicators during training in the future. Let's imagine that we have set 40 epochs.
-- (optional) All training options are described [here](https://docs.ultralytics.com/modes/train/#train-settings)
-- Now let's enter a command for training. `yolo detect train data=game.yaml model=yolov8n.pt epochs=40 imgsz=320`
-- After successful training, go to the runs/detect/train/weights folder.
-- You will see 2 files.
-	- best.pt (This is the file with the best training, that is, we select it.)
-	- last.pt (This file is like a checkpoint, if the training has stopped in any way, then you will be able to continue training from the era where you left off. Type `yolo train resume model=runs/detect/train/weights/last.pt`)
-- To test the model for performance, write little program.
-- Create `test.py` file.
-- Write:
-```python
-from ultralytics import YOLO
+### Setting up the `game.yaml` File
+- The file specifies the following parameters:
+  ```yaml
+  path: game  # Your dataset name
+  train: images  # Folder with training images
+  val: val  # Folder with validation images
+  test:  # Folder with test images (can be empty)
+  ```
 
-model = YOLO('./runs/detect/train/weights/best.pt')
+- To find Ultralytics settings file, enter the command:
+  ```bash
+  yolo settings
+  ```
 
-# Define source as YouTube video URL
-source = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+## Model Training
+- (Optional) Detailed information about training can be found [here](https://docs.ultralytics.com/modes/train/).
+- After annotating the dataset, navigate to the `ai_aimbot_train` folder using the command:
+  ```bash
+  cd ai_aimbot_train
+  ```
+- Choose a pre-trained model. The options are:
+  - **yolo11n** – the fastest and least resource-intensive.
+  - **yolo11s** – fast, slightly smarter but more resource-demanding.
+  - **yolo11m** – optimized for real-time, requires a powerful GPU (e.g., RTX 2060 or better).
+  - **yolo11l** and **yolo11x** – most intelligent and resource-intensive, not suitable for most tasks.
 
-# Run inference on the source
-results = model(source, stream=True)  # generator of Results objects
-```
-- And run it `python test.py`
+- For example, choose **yolo11n**:
+  ```bash
+  model = yolo11n.pt
+  ```
+
+- Select the image size for the model. The lower the resolution, the faster the training and the fewer objects the model can detect:
+  - Possible options: **320**, **480**, **640**. Choose **320**.
+
+- Determine the number of training epochs. A larger dataset requires more epochs, but don't overdo it, as too many epochs can lead to overfitting. Assume we set **40** epochs.
+
+- (Optional) All training parameters are described in detail [here](https://docs.ultralytics.com/modes/train/#train-settings).
+
+- Start training with the command:
+  ```bash
+  yolo detect train data=game.yaml model=yolo11n.pt epochs=40 imgsz=320
+  ```
+  Or simply run the `start_train.bat` file:
+  ```bash
+  ai_aimbot_train/ai_aimbot_train/start_train.bat
+  ```
+
+- After successful training, navigate to the model weights folder:
+  ```
+  ai_aimbot_train/runs/detect/train/weights
+  ```
+  You'll see two files:
+  - `best.pt` – the file with the best model weights.
+  - `last.pt` – checkpoint of the last epoch. If training was interrupted, you can resume from this file:
+    ```bash
+    yolo train resume model=ai_aimbot_train/runs/detect/train/weights/last.pt
+    ```
+
+## Model Testing
+- Create a `test.py` file with the following content:
+  ```python
+  from ultralytics import YOLO
+  
+  model = YOLO('./runs/detect/train/weights/best.pt')
+  
+  source = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+  
+  results = model(source, stream=True)  # generator of Results objects
+  ```
+- Run:
+  ```bash
+  python test.py
+  
+## Fine-Tuning the Sunxds Model to Avoid False Detections or Improve Detection of Other Classes
+
+1. **Selecting a Pre-trained Sunxds Model**
+   - Choose a model that is most similar to your task in terms of version and image size (640, 480, or 320).
+
+2. **Preparing the Dataset**
+   - Prepare the dataset with new annotations as specified in this repository. Ensure that the new annotations follow the YOLO format.
+   - If you want to eliminate false detections, add images with false detections to the dataset and do not annotate anything on them.
+   - If, for some reason, there are poor or no detections of players in a particular game, add annotated images with these players to the dataset.
+   - Don't be lazy; add more images to the dataset, and try to review the entire dataset again for errors after annotating it.
+
+3. **Running the Fine-Tuning**
+   - Execute the following command:
+     ```bash
+     yolo detect train data=game.yaml model=sunxds_0.7.1.pt epochs=40 imgsz=640
+     ```
