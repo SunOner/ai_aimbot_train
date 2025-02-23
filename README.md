@@ -56,10 +56,10 @@ The repository already contains examples of annotated images in the `ai_aimbot_t
   cd ai_aimbot_train
   ```
 - Choose a pre-trained model. The options are:
-  - **yolo11n** – the fastest and least resource-intensive.
-  - **yolo11s** – fast, slightly smarter but more resource-demanding.
-  - **yolo11m** – optimized for real-time, requires a powerful GPU (e.g., RTX 2060 or better).
-  - **yolo11l** and **yolo11x** – most intelligent and resource-intensive, not suitable for most tasks.
+  - **yolo11n** or **yolo12n** – the fastest and least resource-intensive.
+  - **yolo11s** or **yolo12s** – fast, slightly smarter but more resource-demanding.
+  - **yolo11m** or **yolo12m** – optimized for real-time, requires a powerful GPU (e.g., RTX 2060 or better).
+  - **yolo11l** or **yolo12l** and **yolo11x** – most intelligent and resource-intensive, not suitable for most tasks.
 
 - For example, choose **yolo11n**:
   ```bash
@@ -67,7 +67,7 @@ The repository already contains examples of annotated images in the `ai_aimbot_t
   ```
 
 - Select the image size for the model. The lower the resolution, the faster the training and the fewer objects the model can detect:
-  - Possible options: **320**, **480**, **640**. Choose **320**.
+  - Possible options: **160**, **320**, **480**, **640**. Choose **320**.
 
 - Determine the number of training epochs. A larger dataset requires more epochs, but don't overdo it, as too many epochs can lead to overfitting. Assume we set **40** epochs.
 
@@ -75,11 +75,7 @@ The repository already contains examples of annotated images in the `ai_aimbot_t
 
 - Start training with the command:
   ```bash
-  yolo detect train data=game.yaml model=yolo11n.pt epochs=40 imgsz=320
-  ```
-  Or simply run the `start_train.bat` file:
-  ```bash
-  ai_aimbot_train/ai_aimbot_train/start_train.bat
+  yolo detect train data=game.yaml model=yolo11n.pt epochs=40 batch=-1
   ```
 
 - After successful training, navigate to the model weights folder:
@@ -96,22 +92,52 @@ The repository already contains examples of annotated images in the `ai_aimbot_t
 ## Model Testing
 - Create a `test.py` file with the following content:
   ```python
-  from ultralytics import YOLO
-  
-  model = YOLO('./runs/detect/train/weights/best.pt')
-  
-  source = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-  
-  results = model(source, stream=True)  # generator of Results objects
+	import cv2
+
+	from ultralytics import YOLO
+	
+	# Load the YOLO model
+	model = YOLO("best.pt")
+	
+	# Open the video file
+	video_path = "path/to/your/video/file.mp4"
+	cap = cv2.VideoCapture(video_path)
+	
+	# Loop through the video frames
+	while cap.isOpened():
+		# Read a frame from the video
+		success, frame = cap.read()
+	
+		if success:
+			# Run YOLO inference on the frame
+			results = model(frame)
+	
+			# Visualize the results on the frame
+			annotated_frame = results[0].plot()
+	
+			# Display the annotated frame
+			cv2.imshow("YOLO Inference", annotated_frame)
+	
+			# Break the loop if 'q' is pressed
+			if cv2.waitKey(1) & 0xFF == ord("q"):
+				break
+		else:
+			# Break the loop if the end of the video is reached
+			break
+	
+	# Release the video capture object and close the display window
+	cap.release()
+	cv2.destroyAllWindows()
   ```
 - Run:
   ```bash
   python test.py
+  ```
   
 ## Fine-Tuning the Sunxds Model to Avoid False Detections or Improve Detection of Other Classes
 
 1. **Selecting a Pre-trained Sunxds Model**
-   - Choose a model that is most similar to your task in terms of version and image size (640, 480, or 320).
+   - Choose a model that is most similar to your task in terms of version and image size (640, 480, 320 or 160).
 
 2. **Preparing the Dataset**
    - Prepare the dataset with new annotations as specified in this repository. Ensure that the new annotations follow the YOLO format.
@@ -122,5 +148,12 @@ The repository already contains examples of annotated images in the `ai_aimbot_t
 3. **Running the Fine-Tuning**
    - Execute the following command:
      ```bash
-     yolo detect train data=game.yaml model=sunxds_0.7.1.pt epochs=40 imgsz=640
+     yolo detect train data=game.yaml model=sunxds_0.7.5.pt epochs=40
      ```
+
+## Export model to run model in sunone_aimbot_cpp:
+- Export model to onnx format with dynamic shape:
+	```bash
+	yolo export model=best.pt format=onnx dynamic=true simplify=true
+	```
+- Select .onnx model in AI tab.
